@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { text-align: center; font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding-top: 40px; }
+        #clock {
+            width: 450px; height: 450px; border: 15px solid #2c3e50; background: white;
+            border-radius: 50%; position: relative; margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; border-radius: 10px; z-index: 5; transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1); }
+        #h { width: 12px; height: 110px; background: #007bff; margin-left: -6px; }
+        #m { width: 8px; height: 180px; background: #34495e; margin-left: -4px; }
+        .number { position: absolute; width: 40px; height: 40px; font-size: 28px; font-weight: bold; color: #2c3e50; text-align: center; line-height: 40px; }
+        .tick { position: absolute; width: 2px; height: 12px; background: #bdc3c7; left: 50%; transform-origin: 0 225px; }
+        .tick.hour-tick { width: 4px; height: 22px; background: #2c3e50; }
+        #center { width: 22px; height: 22px; background: #2c3e50; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; border: 3px solid white; }
+        
+        .controls { margin-top: 40px; }
+        button { 
+            padding: 18px 40px; font-size: 20px; font-weight: bold; border: none; 
+            border-radius: 12px; cursor: pointer; color: white; background: #e67e22;
+            transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        button:hover { background: #d35400; transform: translateY(-2px); }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+    </style>
+</head>
+<body>
+
+    <div id="clock">
+        <div id="center"></div>
+        <div id="h" class="hand"></div>
+        <div id="m" class="hand"></div>
+    </div>
+
+    <div class="controls">
+        <button id="drawBtn" onclick="estrai()">🎰 ESTRAI ORARIO</button>
+    </div>
+
+    <script>
+        let orari = [
+            "08:07", "09:12", "10:43", "11:19", "07:56", "12:28", "06:34", 
+            "11:59", "14:22", "15:38", "17:04", "18:51", "20:13", "22:47", 
+            "19:15", "23:45", "05:25"
+        ];
+
+        const clock = document.getElementById('clock');
+        const drawBtn = document.getElementById('drawBtn');
+        
+        // Creazione quadrante
+        for (let i = 0; i < 60; i++) {
+            let tick = document.createElement('div');
+            tick.className = 'tick' + (i % 5 === 0 ? ' hour-tick' : '');
+            tick.style.transform = `translateX(-50%) rotate(${i * 6}deg)`;
+            clock.appendChild(tick);
+        }
+        for (let i = 1; i <= 12; i++) {
+            let num = document.createElement('div');
+            num.className = 'number';
+            num.innerText = i;
+            let angle = (i * 30) * (Math.PI / 180);
+            num.style.left = (225 + 185 * Math.sin(angle) - 20) + 'px';
+            num.style.top = (225 - 185 * Math.cos(angle) - 20) + 'px';
+            clock.appendChild(num);
+        }
+
+        function muovi(ore, minuti) {
+            let h12 = ore % 12;
+            document.getElementById('h').style.transform = `translateX(-50%) rotate(${(h12 * 30) + (minuti / 2)}deg)`;
+            document.getElementById('m').style.transform = `translateX(-50%) rotate(${minuti * 6}deg)`;
+        }
+
+        function estrai() {
+            if (orari.length === 0) return;
+
+            drawBtn.disabled = true;
+            
+            let giri = 0;
+            let intervallo = setInterval(() => {
+                muovi(Math.floor(Math.random() * 12), Math.floor(Math.random() * 60));
+                giri++;
+                if(giri > 15) {
+                    clearInterval(intervallo);
+                    
+                    const indice = Math.floor(Math.random() * orari.length);
+                    const estratto = orari[indice];
+                    orari.splice(indice, 1);
+                    
+                    const [h, m] = estratto.split(':');
+                    muovi(parseInt(h), parseInt(m));
+                    
+                    if (orari.length > 0) {
+                        drawBtn.disabled = false;
+                    } else {
+                        drawBtn.innerText = "ESTRAZIONI COMPLETATE";
+                    }
+                }
+            }, 70);
+        }
+
+        // Posizione iniziale neutra
+        muovi(12, 0);
+    </script>
+</body>
+</html>
